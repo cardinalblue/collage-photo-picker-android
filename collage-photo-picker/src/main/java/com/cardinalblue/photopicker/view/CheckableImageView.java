@@ -109,11 +109,13 @@ public class CheckableImageView
     }
 
     // FIXME: Make it an interface.
+    @SuppressWarnings("unused")
     public int getFixedDimension() {
         return mFixedDimension;
     }
 
     // FIXME: Make it an interface.
+    @SuppressWarnings("unused")
     public void setFixedDimension(int dimen) {
         if (dimen < FIXED_WIDTH || dimen > FIXED_HEIGHT) {
             throw new IllegalArgumentException(

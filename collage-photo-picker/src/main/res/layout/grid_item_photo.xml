@@ -8,5 +8,7 @@
     android:clickable="false"
     android:scaleType="centerCrop"
     app:CheckableView_aspectRatio="1.0"
+    app:CheckableView_checkable="true"
     app:CheckableView_fixedDimension="width"
+    app:CheckableView_isChecked="false"
     tools:src="@color/pink"/>
