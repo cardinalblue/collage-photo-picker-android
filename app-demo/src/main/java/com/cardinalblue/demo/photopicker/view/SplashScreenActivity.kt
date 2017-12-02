@@ -18,12 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package com.cardinalblue.demo.photopicker
+package com.cardinalblue.demo.photopicker.view
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.cardinalblue.demo.R
+import com.cardinalblue.demo.photopicker.R
 import io.reactivex.Observable
 import java.util.concurrent.TimeUnit
 

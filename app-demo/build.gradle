@@ -7,7 +7,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.cardinalblue.pine"
+        applicationId 'com.cardinalblue.demo.photopicker'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -72,12 +72,13 @@ dependencies {
     implementation rootProject.ext.dep.rxAndroid
     // Rx-Binding.
     implementation rootProject.ext.dep.rxBinding
+    implementation rootProject.ext.dep.rxBindingCompat
     implementation rootProject.ext.dep.rxBindingRecyclerViewV7
     // Rx-Permissions.
     implementation rootProject.ext.dep.rxPermissions
 
-    // RecyclerView plugins.
-    implementation rootProject.ext.dep.airbnbEpoxy
+    // JSON.
+    implementation rootProject.ext.dep.gson
 
     // FIXME: The "implementation" doesn't include the *.jar dependency in the
     // FIXME: library module.

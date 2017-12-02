@@ -29,7 +29,7 @@
 
     <!-- Save switch -->
     <android.support.v7.widget.SwitchCompat
-        android:id="@+id/btn_save"
+        android:id="@+id/switch_save"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:paddingLeft="16dp"
@@ -45,7 +45,7 @@
         android:text="@string/label_save"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@id/guide_toolbar_bottom"
-        app:layout_constraintLeft_toRightOf="@id/btn_save"
+        app:layout_constraintLeft_toRightOf="@id/switch_save"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <!-- Simple photo picker -->
