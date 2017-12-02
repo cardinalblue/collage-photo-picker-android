@@ -310,6 +310,14 @@ public class PhotoPickerPresenter
             mDisposablesOnCreate.clear();
             mDisposablesOnCreate = null;
         }
+
+        // Recycle the albums.
+        mAlbumList.clear();
+
+        // Recycle the photo cursor.
+        if (mPhotoCursor != null && !mPhotoCursor.isClosed()) {
+            mPhotoCursor.close();
+        }
     }
 
     @Override
