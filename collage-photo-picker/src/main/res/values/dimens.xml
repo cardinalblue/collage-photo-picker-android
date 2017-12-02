@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spinner_width">280dp</dimen>
+    <dimen name="spinner_album_width">24dp</dimen>
+    <dimen name="spinner_album_height">24dp</dimen>
+
+    <dimen name="grid_item_spacing_big">6dp</dimen>
+    <dimen name="grid_item_spacing_medium">3dp</dimen>
+    <dimen name="grid_item_spacing_small">1dp</dimen>
+</resources>

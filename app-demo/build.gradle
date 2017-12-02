@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.cardinalblue.pine"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+
+        ndk {
+            // "x86", "x86_64", "armeabi", "armeabi-v7a", "arm64-v8a"
+            abiFilters "armeabi-v7a"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        disable "MissingTranslation"
+    }
+
+    // Don't compress the Unity assets.
+    aaptOptions {
+        noCompress '.unity3d', '.ress', '.resource', '.obb'
+    }
+
+    // Pick first STL shared library if there're duplicate files in the
+    // dependent module.
+    packagingOptions {
+        pickFirst "**/libc++_shared.so"
+    }
+}
+
+repositories {
+    maven { url "https://maven.fabric.io/public" }
+    // Find the AAR files in the libs folder.
+    flatDir { dirs "libs" }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Google Support Library.
+    implementation rootProject.ext.dep.supportAppcompatV7
+    implementation rootProject.ext.dep.supportVectorDrawable
+    implementation rootProject.ext.dep.supportRecyclerViewV7
+    implementation rootProject.ext.dep.supportConstraintLayout
+    // Transition
+    implementation rootProject.ext.dep.supportTransition
+    // Multi-dex.
+    implementation rootProject.ext.dep.supportMultidex
+
+    // RxKotlin.
+    implementation rootProject.ext.dep.rxKotlin
+    // Rx-Java.
+    implementation rootProject.ext.dep.rxJava
+    implementation rootProject.ext.dep.rxAndroid
+    // Rx-Binding.
+    implementation rootProject.ext.dep.rxBinding
+    implementation rootProject.ext.dep.rxBindingRecyclerViewV7
+    // Rx-Permissions.
+    implementation rootProject.ext.dep.rxPermissions
+
+    // RecyclerView plugins.
+    implementation rootProject.ext.dep.airbnbEpoxy
+
+    // FIXME: The "implementation" doesn't include the *.jar dependency in the
+    // FIXME: library module.
+    compile project(path: ':collage-photo-picker')
+
+    testImplementation rootProject.ext.dep.testJunit
+
+    androidTestImplementation rootProject.ext.dep.testRunner
+    androidTestImplementation rootProject.ext.dep.testEspressoCore
+}

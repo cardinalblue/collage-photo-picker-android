@@ -1,0 +1,22 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/album_spinner"
+        android:layout_width="@dimen/spinner_width"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:dropDownHorizontalOffset="-16dp"
+        android:dropDownWidth="@dimen/spinner_width"
+        android:orientation="horizontal"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/photos_picker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"/>
+</LinearLayout>

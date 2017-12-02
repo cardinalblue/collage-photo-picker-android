@@ -1,0 +1,1 @@
+include ':app-demo', ':collage-photo-picker'

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.cardinalblue.photopicker.view.CheckableImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="false"
+    android:scaleType="centerCrop"
+    app:CheckableView_aspectRatio="1.0"
+    app:CheckableView_fixedDimension="width"
+    tools:src="@color/pink"/>
