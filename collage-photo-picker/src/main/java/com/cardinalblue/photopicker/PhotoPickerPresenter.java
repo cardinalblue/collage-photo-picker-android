@@ -37,10 +37,13 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 public class PhotoPickerPresenter
-    implements IPhotoSelectionObservable,
-               IPresenter<PhotoPickerContract.IPhotoPickerView> {
+    implements IPresenter<PhotoPickerContract.IPhotoPickerView>,
+               IPhotoSelectionObservable,
+               IOnErrorObservable {
 
     // Given.
     private final PhotoPickerContract.IPhotosLoader mGalleryLoader;
@@ -59,6 +62,9 @@ public class PhotoPickerPresenter
     private Cursor mPhotoCursor = null;
     private int mFocusPosition = PhotoPickerViewModel.IGNORED_POSITION;
 
+    // Error.
+    private final Subject<Throwable> mOnError = PublishSubject.create();
+
     // Disposable
     private CompositeDisposable mDisposablesOnCreate;
     private CompositeDisposable mDisposablesOnResume;
@@ -76,11 +82,6 @@ public class PhotoPickerPresenter
         mWorkScheduler = workerScheduler;
 
         mLogger = logger;
-    }
-
-    @Override
-    public Observable<PhotoPickerViewModel> onSelectionUpdate() {
-        return mSelectionStore.onSelectionUpdate();
     }
 
     @Override
@@ -172,7 +173,10 @@ public class PhotoPickerPresenter
                                     mPickerView.showAlertForNotLoadingPhotos();
                                 }
                             } else if (result.error != null) {
-                                mPickerView.setPhotosCursor(null, mGalleryLoader);
+                                // Dispatch the error.
+                                mOnError.onNext(result.error);
+
+                                mPickerView.setPhotosCursor(null, null, null);
                                 mPickerView.showAlertForNotLoadingPhotos();
                                 // TODO: Find a way to re-subscribe the observer to
                                 // TODO: the upstream.
@@ -186,9 +190,8 @@ public class PhotoPickerPresenter
                     }
                 }));
 
-        // User select a photo
+        // Click on thumbnail.
         mDisposablesOnCreate.add(
-            // TODO: or implement from callbacks of ObservableArrayList?
             mPickerView
                 .onClickThumbnail()
                 .subscribe(new Consumer<Integer>() {
@@ -231,7 +234,6 @@ public class PhotoPickerPresenter
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(@NonNull Object o) throws Exception {
-                        // TODO: confirm this with Morning about weird naming.
                         mLogger.log("Adder menu - Use Camera");
                         mPickerView.navigateToCameraView();
                     }
@@ -255,7 +257,7 @@ public class PhotoPickerPresenter
                     }
                 }));
 
-        // Navigate to preview page when user long press.
+        // Long-press on thumbnail.
         mDisposablesOnCreate.add(
             mPickerView
                 .onLongPressThumbnail()
@@ -365,6 +367,16 @@ public class PhotoPickerPresenter
             mDisposablesOnResume.clear();
             mDisposablesOnResume = null;
         }
+    }
+
+    @Override
+    public Observable<PhotoPickerViewModel> onSelectionUpdate() {
+        return mSelectionStore.onSelectionUpdate();
+    }
+
+    @Override
+    public Observable<Throwable> onError() {
+        return mOnError;
     }
 
     ///////////////////////////////////////////////////////////////////////////
