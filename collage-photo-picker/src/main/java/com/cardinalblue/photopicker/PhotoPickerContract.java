@@ -26,6 +26,7 @@ import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
 
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 
@@ -82,7 +83,7 @@ public final class PhotoPickerContract {
 
         void setAlbums(List<IAlbum> albums, int selectPosition);
 
-        void setPhotosCursor(Cursor cursor, IPhotosLoader loader) throws Exception;
+        void setPhotosCursor(Cursor cursor, IPhotosLoader loader, Set<String> selection) throws Exception;
 
         void select(PhotoPickerViewModel selectedPhotos);
 

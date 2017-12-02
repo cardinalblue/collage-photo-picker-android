@@ -28,7 +28,9 @@ import com.cardinalblue.photopicker.model.PhotoPickerStore;
 import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -163,7 +165,9 @@ public class PhotoPickerPresenter
 
                                 if (cursor.getCount() > 0) {
                                     mPickerView.setPhotosCursor(result.cursor,
-                                                                mGalleryLoader);
+                                                                mGalleryLoader,
+                                                                // Immutable data.
+                                                                getUrlSelectionSet());
                                 } else {
                                     mPickerView.showAlertForNotLoadingPhotos();
                                 }
@@ -350,4 +354,14 @@ public class PhotoPickerPresenter
 
     ///////////////////////////////////////////////////////////////////////////
     // Protected / Private Methods ////////////////////////////////////////////
+
+    private Set<String> getUrlSelectionSet() {
+        final Set<String> set = new HashSet<>();
+
+        for (IPhoto photo : mSelectionStore.getSelectionCopy()) {
+            set.add(photo.getSourceUrl());
+        }
+
+        return set;
+    }
 }

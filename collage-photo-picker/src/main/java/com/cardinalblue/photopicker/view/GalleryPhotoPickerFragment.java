@@ -42,6 +42,7 @@ import com.cardinalblue.photopicker.PhotoPickerContract;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
@@ -334,8 +335,9 @@ public class GalleryPhotoPickerFragment
 
     @Override
     public void setPhotosCursor(Cursor cursor,
-                                PhotoPickerContract.IPhotosLoader loader) throws Exception {
-        mAdapter.setData(cursor, loader);
+                                PhotoPickerContract.IPhotosLoader loader,
+                                Set<String> selection) throws Exception {
+        mAdapter.setData(cursor, loader, selection);
     }
 
     @Override

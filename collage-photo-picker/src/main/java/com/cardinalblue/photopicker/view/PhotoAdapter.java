@@ -31,7 +31,9 @@ import com.cardinalblue.photopicker.R;
 import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.PhotoPickerContract;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
 
@@ -45,6 +47,9 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
     private final IOnTouchPhotoListener mListener;
     // Given optionally.
     private PhotoPickerContract.IPhotosLoader mPhotoLoader;
+
+    // The photo URL set for checked photos.
+    private final Set<String> mSelection = new HashSet<>();
 
     // FIXME: should determine what value should be init ( or Injected form constructor)
     private boolean mIsEnableCamera = true;
@@ -126,30 +131,42 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
         // With/without payload.
         if (payloads != null && !payloads.isEmpty()) {
             if (payloads.contains(PAYLOAD_SELECTED_PHOTO)) {
+                mSelection.add(photo.getSourceUrl());
+
                 imageView.setChecked(true);
             } else if (payloads.contains(PAYLOAD_UNSELECTED_PHOTO)) {
+                mSelection.remove(photo.getSourceUrl());
+
                 imageView.setChecked(false);
             }
         } else {
-            // FIXME: Adapter is responsible for this.
-//            // Check/Un-check the view.
-//            imageView.setChecked(mSelectionPool.getSelection().contains(photo));
-//            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            // Check/Un-check the view.
+            imageView.setChecked(mSelection.contains(photo.getSourceUrl()));
             imageView.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
-                        mListener.onSelectPhoto(viewHolder.getAdapterPosition(),
-                                                photo, imageView.isChecked());
+                        if (mIsEnableCamera) {
+                            // Minus 1 is because the position for the state
+                            // representing the position in the photos world.
+                            mListener.onSelectPhoto(viewHolder.getAdapterPosition() - 1);
+                        } else {
+                            mListener.onSelectPhoto(viewHolder.getAdapterPosition());
+                        }
                     }
                 }
             });
             imageView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if (mListener != null && isEnableLongPress) {
-                        mListener.onLongPressPhoto(viewHolder.getAdapterPosition(),
-                                                   photo, imageView.isChecked());
+                    if (mListener != null && mIsEnableLongPress) {
+                        if (mIsEnableCamera) {
+                            // Minus 1 is because the position for the state
+                            // representing the position in the photos world.
+                            mListener.onLongPressPhoto(viewHolder.getAdapterPosition() - 1);
+                        } else {
+                            mListener.onLongPressPhoto(viewHolder.getAdapterPosition());
+                        }
                     }
                     return true;
                 }
@@ -168,12 +185,22 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
     public void setData(Cursor cursor) throws Exception {
         super.setData(cursor);
         throw new IllegalAccessException(
-            "Please use setData(cursor, loader) instead.");
+            "Please use setData(cursor, loader, selection) instead.");
     }
 
-    public void setData(Cursor cursor,
-                        PhotoPickerContract.IPhotosLoader loader) throws Exception{
+    ///////////////////////////////////////////////////////////////////////////
+    // Protected / Private Methods ////////////////////////////////////////////
+
+    void setData(Cursor cursor,
+                 PhotoPickerContract.IPhotosLoader loader,
+                 Set<String> selection) throws Exception{
         mPhotoLoader = loader;
+
+        mSelection.clear();
+        if (selection != null) {
+            mSelection.addAll(selection);
+        }
+
         setData(cursor);
     }
 
