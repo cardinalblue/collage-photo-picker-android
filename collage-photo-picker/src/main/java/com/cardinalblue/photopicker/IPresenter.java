@@ -17,11 +17,15 @@
 
 package com.cardinalblue.photopicker;
 
+import android.support.annotation.NonNull;
+
 public interface IPresenter<V> {
 
-    void bindViewOnCreate(V view);
+    void bindViewOnCreate(@NonNull V view);
+
     void unBindViewOnDestroy();
 
     void onResume();
+
     void onPause();
 }

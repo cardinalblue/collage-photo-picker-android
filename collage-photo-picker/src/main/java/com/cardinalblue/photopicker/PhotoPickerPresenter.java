@@ -19,6 +19,7 @@
 
 package com.cardinalblue.photopicker;
 
+import android.Manifest;
 import android.database.Cursor;
 
 import com.cardinalblue.photopicker.data.IAlbum;
@@ -26,6 +27,7 @@ import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.model.CursorViewModel;
 import com.cardinalblue.photopicker.model.PhotoPickerStore;
 import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ public class PhotoPickerPresenter
                IOnErrorObservable {
 
     // Given.
+    private final RxPermissions mPermissionsHelper;
     private final PhotoPickerContract.IPhotosLoader mGalleryLoader;
     private final PhotoPickerStore mSelectionStore;
     private final Scheduler mUiScheduler;
@@ -68,14 +71,16 @@ public class PhotoPickerPresenter
     private final Subject<Throwable> mOnError = PublishSubject.create();
 
     // Disposable
-    private CompositeDisposable mDisposablesOnCreate;
-    private CompositeDisposable mDisposablesOnResume;
+    private final CompositeDisposable mDisposablesOnCreate = new CompositeDisposable();
+    private final CompositeDisposable mDisposablesOnResume = new CompositeDisposable();
 
-    public PhotoPickerPresenter(PhotoPickerContract.IPhotosLoader galleryLoader,
+    public PhotoPickerPresenter(RxPermissions permissionsHelper,
+                                PhotoPickerContract.IPhotosLoader galleryLoader,
                                 PhotoPickerStore selectionStore,
                                 Scheduler uiScheduler,
                                 Scheduler workerScheduler,
                                 IPhotoPickerLogger logger) {
+        mPermissionsHelper = permissionsHelper;
         mGalleryLoader = galleryLoader;
 
         mSelectionStore = selectionStore;
@@ -95,22 +100,39 @@ public class PhotoPickerPresenter
 
         mPickerView.enableCameraOption(true);
 
-        // Generate observable flows.
-        mDisposablesOnCreate = new CompositeDisposable();
-
-        // TODO: Grant for the permissions?
-
         // Load all albums
         mDisposablesOnCreate.add(
-            mGalleryLoader
-                .loadAlbums()
-                .subscribeOn(mWorkScheduler)
+            mPermissionsHelper
+                // 1. Ask for permissions.
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
+                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                // 2. Load albums if the permissions are granted.
+                .flatMap(new Function<Boolean, ObservableSource<List<IAlbum>>>() {
+                    @Override
+                    public ObservableSource<List<IAlbum>> apply(Boolean granted) throws Exception {
+                        if (granted) {
+                            return mGalleryLoader
+                                .loadAlbums()
+                                .subscribeOn(mWorkScheduler);
+                        } else {
+                            return Observable.<List<IAlbum>>just(new ArrayList<IAlbum>());
+                        }
+                    }
+                })
                 .observeOn(mUiScheduler)
                 .subscribe(new Consumer<List<IAlbum>>() {
                     @Override
                     public void accept(@NonNull List<IAlbum> albums) throws Exception {
-                        mPickerView.setAlbums(albums, mAlbumPosition);
-                        mAlbumList.addAll(albums);
+                        if (albums.isEmpty()) {
+                            mAlbumPosition = -1;
+
+                            mPickerView.showPermissionDeniedPrompt();
+                        } else {
+                            mAlbumPosition = 0;
+
+                            mPickerView.setAlbums(albums, mAlbumPosition);
+                            mAlbumList.addAll(albums);
+                        }
                     }
                 }));
 
@@ -310,10 +332,7 @@ public class PhotoPickerPresenter
 
     @Override
     public void unBindViewOnDestroy() {
-        if (mDisposablesOnCreate != null) {
-            mDisposablesOnCreate.clear();
-            mDisposablesOnCreate = null;
-        }
+        mDisposablesOnCreate.clear();
 
         // Recycle the albums.
         mAlbumList.clear();
@@ -330,16 +349,11 @@ public class PhotoPickerPresenter
         if (mFocusPosition != PhotoPickerViewModel.IGNORED_POSITION) {
             mPickerView.scrollToPosition(mFocusPosition);
         }
-
-        mDisposablesOnResume = new CompositeDisposable();
     }
 
     @Override
     public void onPause() {
-        if (mDisposablesOnResume != null) {
-            mDisposablesOnResume.clear();
-            mDisposablesOnResume = null;
-        }
+        mDisposablesOnResume.clear();
     }
 
     @Override

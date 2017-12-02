@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -91,7 +92,8 @@ public class GalleryPhotoPickerFragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_photo_picker, container, false);
 
@@ -283,8 +285,15 @@ public class GalleryPhotoPickerFragment
     }
 
     @Override
-    public void showPrompt() {
-        // DUMMY IMPL.
+    public void showPermissionDeniedPrompt() {
+        if (getActivity() == null || getActivity().isFinishing()) return;
+
+        // TODO: Show permission denied prompt.
+        new AlertDialog.Builder(getActivity())
+            .setMessage(getResources().getString(R.string.warning_permissions_denied))
+            .create()
+            .show();
+//        mAdapter.setPermissionDenied();
     }
 
     @Override
@@ -320,16 +329,15 @@ public class GalleryPhotoPickerFragment
             if (albumAdapter != null) {
                 albumAdapter.setData(new ArrayList<>(albums));
 
-                // FIXME: maybe we can remove these and only do these in onItemSelected();
                 // Load photos of the album.
                 int index = mAlbumSpinner.getSelectedItemPosition();
                 mOnClickAlbum.onNext(albums.get(index).getAlbumId());
             }
         } else {
             mAlbumSpinner.setEnabled(false);
-            mAlbumSpinner.setAdapter(null);
 
-            mGalleryView.setAdapter(null);
+            // Show permission denied prompt.
+            showPermissionDeniedPrompt();
         }
     }
 

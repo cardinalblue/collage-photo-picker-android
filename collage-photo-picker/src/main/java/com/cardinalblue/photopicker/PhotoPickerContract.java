@@ -71,7 +71,7 @@ public final class PhotoPickerContract {
 
         void hideProgressbar();
 
-        void showPrompt();
+        void showPermissionDeniedPrompt();
 
         void showAlertForNotLoadingPhotos();
 
