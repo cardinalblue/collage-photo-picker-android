@@ -103,18 +103,24 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
     public void onBindViewHolder(ViewHolder holder,
                                  int position,
                                  List<Object> payloads) {
-        if (position == 0 && isEnableCamera) {
-            // The camera call-to-action item.
-            holder.itemView.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mListener != null) {
-                        mListener.onTakePhoto();
+        if (mIsEnableCamera) {
+            if (position == 0) {
+                // The camera call-to-action item.
+                holder.itemView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null) {
+                            mListener.onTakePhoto();
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                // Photo item:
+                // Minus 1 is because the position for the state
+                // representing the position in the photos world.
+                super.onBindViewHolder(holder, position - 1, payloads);
+            }
         } else {
-            // Photo item.
             super.onBindViewHolder(holder, position, payloads);
         }
     }
