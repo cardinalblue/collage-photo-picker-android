@@ -25,23 +25,13 @@ public final class PhotoPickerToolbarContract {
 
     public interface IToolbarView {
 
-        void setEnabled(boolean enabled);
-
         void setToolbarTitle(String title);
-
-        void setBackButtonType(int type);
-
-        void enableDoneButton(boolean enabled, boolean visible);
-
-        void enableSkipButton(boolean enabled, boolean visible);
 
         void setSelectionCount(int num);
 
         Observable<Object> onClickBackButton();
 
         Observable<Object> onClickDoneButton();
-
-        Observable<Object> onClickSkipButton();
     }
 
     private PhotoPickerToolbarContract() {

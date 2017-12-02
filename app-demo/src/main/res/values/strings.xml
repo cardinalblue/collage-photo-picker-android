@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Photo Picker Demo</string>
+    <string name="label_save">Save</string>
 </resources>

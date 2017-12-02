@@ -27,7 +27,8 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 
-public class PhotoPickerToolbarPresenter implements IPresenter<PhotoPickerToolbarContract.IToolbarView> {
+public class PhotoPickerToolbarPresenter
+    implements IPresenter<PhotoPickerToolbarContract.IToolbarView> {
 
     // Given.
 //    private final PhotoPickerContract.INavigator mNavigator;
@@ -59,11 +60,6 @@ public class PhotoPickerToolbarPresenter implements IPresenter<PhotoPickerToolba
     @Override
     public void bindViewOnCreate(PhotoPickerToolbarContract.IToolbarView view) {
         mToolbarView = view;
-        mToolbarView.setBackButtonType(0);
-//        if (PathRouter.PATH_START_FROM_GRID.equals(mPathRouter.getSessionSource())) {
-//            mToolbarView.enableSkipButton(true, true);
-//            mToolbarView.enableDoneButton(false, false);
-//        }
 
         // Update number of photo to selector button
         mToolbarView.setSelectionCount(mSelectionStore.getSelection().size());
@@ -92,21 +88,6 @@ public class PhotoPickerToolbarPresenter implements IPresenter<PhotoPickerToolba
                     }
                 }));
 
-        // Skip button.
-        mDisposablesOnCreate.add(
-            mToolbarView
-                .onClickSkipButton()
-                .subscribe(new Consumer<Object>() {
-                    @Override
-                    public void accept(@NonNull Object ignored) throws Exception {
-                        mLogger.log("Pick photo - Skip");
-
-//                        if (mNavigator != null) {
-//                            mNavigator.navigateToNextPageWithResult(Collections.<IPhoto>emptyList());
-//                        }
-                    }
-                }));
-
         // Back button.
         mDisposablesOnCreate.add(
             mToolbarView
@@ -115,12 +96,6 @@ public class PhotoPickerToolbarPresenter implements IPresenter<PhotoPickerToolba
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(@NonNull Object o) throws Exception {
-                        // FIXME: These events are for magic mode only
-//                        if (mCollageHasChanged) {
-//                            EventConsts.COLLAGE_EDITOR_DID_FINISH();
-//                            EventConsts.SAVE_COLLAGE();
-//                        }
-
 //                        if (mNavigator != null) {
 //                            mNavigator.navigateToPreviousPageWithoutResult();
 //                        }

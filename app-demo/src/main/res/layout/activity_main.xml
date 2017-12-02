@@ -14,18 +14,41 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="64dp"/>
 
+    <!-- Selection number indicator -->
     <TextView
         android:id="@+id/selection_num"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:gravity="center"
         android:padding="14dp"
+        android:text="(0)"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/guide_toolbar_bottom"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="(10)"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
+    <!-- Save switch -->
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/btn_save"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:paddingLeft="16dp"
+        app:layout_constraintBottom_toBottomOf="@id/guide_toolbar_bottom"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="center_vertical|left"
+        android:padding="14dp"
+        android:text="@string/label_save"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/guide_toolbar_bottom"
+        app:layout_constraintLeft_toRightOf="@id/btn_save"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- Simple photo picker -->
     <FrameLayout
         android:id="@+id/picker"
         android:layout_width="0dp"
