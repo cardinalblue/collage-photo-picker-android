@@ -117,7 +117,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
     ///////////////////////////////////////////////////////////////////////////
     // Protected / Private Methods ////////////////////////////////////////////
 
-    protected void checkDataAndCursorOrThrow(int position) {
+    private void checkDataAndCursorOrThrow(int position) {
         if (!mDataValid) {
             throw new IllegalStateException(
                 "this should only be called when the cursor is valid");

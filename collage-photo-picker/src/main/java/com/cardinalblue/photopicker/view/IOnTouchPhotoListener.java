@@ -19,16 +19,14 @@
 
 package com.cardinalblue.photopicker.view;
 
-import com.cardinalblue.photopicker.data.IPhoto;
-
 public interface IOnTouchPhotoListener {
 
     void onTakePhoto();
 
     // TODO: position only.
-    void onSelectPhoto(int position, IPhoto info, boolean isSelected);
-    void onLongPressPhoto(int position, IPhoto info, boolean isSelected);
+    void onSelectPhoto(int position);
+    void onLongPressPhoto(int position);
 
-    void onClickPreviewIcon(int position, IPhoto info, boolean isSelected);
-    void onLongPressPreviewIcon(int position, IPhoto info, boolean isSelected);
+    void onClickPreviewIcon(int position);
+    void onLongPressPreviewIcon(int position);
 }

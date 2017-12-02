@@ -18,7 +18,6 @@ package com.cardinalblue.photopicker.view;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
@@ -26,15 +25,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.TransitionOptions;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.transition.TransitionFactory;
 import com.cardinalblue.photopicker.R;
 import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.PhotoPickerContract;
 
-import java.io.File;
 import java.util.List;
 
 public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
@@ -51,8 +47,8 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
     private PhotoPickerContract.IPhotosLoader mPhotoLoader;
 
     // FIXME: should determine what value should be init ( or Injected form constructor)
-    private boolean isEnableCamera = true;
-    private boolean isEnableLongPress = false;
+    private boolean mIsEnableCamera = true;
+    private boolean mIsEnableLongPress = false;
 
     PhotoAdapter(Context context,
                  IOnTouchPhotoListener listener) {
@@ -70,7 +66,7 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
      */
     @Override
     public int getItemViewType(int position) {
-        if (position == 0 && isEnableCamera) {
+        if (position == 0 && mIsEnableCamera) {
             return CAMERA_VIEW_TYPE;
         } else {
             return IMAGE_VIEW_TYPE;
@@ -122,6 +118,7 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
     public void onBindViewHolder(final ViewHolder viewHolder,
                                  final Cursor cursor,
                                  final List<Object> payloads) {
+        final IPhoto photo = mPhotoLoader.toPhoto(cursor, false);
         final ThumbnailViewHolder thumbnailViewHolder = (ThumbnailViewHolder) viewHolder;
         // Normal photo thumbnail.
         final CheckableImageView imageView = thumbnailViewHolder.photoThumbnail;
@@ -134,9 +131,6 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
                 imageView.setChecked(false);
             }
         } else {
-            final IPhoto photo = mPhotoLoader.toPhoto(cursor, false);
-            final File file = new File(photo.getSourceUrl());
-
             // FIXME: Adapter is responsible for this.
 //            // Check/Un-check the view.
 //            imageView.setChecked(mSelectionPool.getSelection().contains(photo));
@@ -163,7 +157,7 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
 
             // Load image.
             Glide.with(getContext())
-                 .load(file)
+                 .load(photo.getSourceUrl())
                  .apply(RequestOptions.placeholderOf(R.color.black_90))
                  .transition(DrawableTransitionOptions.withCrossFade())
                  .into(imageView);
@@ -183,15 +177,12 @@ public class PhotoAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
         setData(cursor);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Protected / Private Methods ////////////////////////////////////////////
-
-    void setEnableCamera(boolean enableCamera) {
-        isEnableCamera = enableCamera;
+    void setIsEnableCamera(boolean mIsEnableCamera) {
+        this.mIsEnableCamera = mIsEnableCamera;
     }
 
-    void setEnableLongPress(boolean enableTouch) {
-        isEnableLongPress = enableTouch;
+    void setIsEnableLongPress(boolean enableTouch) {
+        mIsEnableLongPress = enableTouch;
     }
 
     ///////////////////////////////////////////////////////////////////////////

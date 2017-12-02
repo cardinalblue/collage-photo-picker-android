@@ -62,7 +62,7 @@ public class PhotoPickerToolbarPresenter
         mToolbarView = view;
 
         // Update number of photo to selector button
-        mToolbarView.setSelectionCount(mSelectionStore.getSelection().size());
+        mToolbarView.setSelectionCount(mSelectionStore.getSelectionCopy().size());
 
         // Generate observable flows.
         mDisposablesOnCreate = new CompositeDisposable();
@@ -74,15 +74,15 @@ public class PhotoPickerToolbarPresenter
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(@NonNull Object ignored) throws Exception {
-                        if (mSelectionStore.getSelection().isEmpty()) return;
+                        if (mSelectionStore.getSelectionCopy().isEmpty()) return;
 
                         mLogger.log("Add Photos - Image from Photo Library");
                         mLogger.log("Add Photos", "from", "library",
                                     "page", "photo picker",
-                                    "num_of_image", String.valueOf(mSelectionStore.getSelection().size()));
+                                    "num_of_image", String.valueOf(mSelectionStore.getSelectionCopy().size()));
 
 //                        if (mNavigator != null) {
-//                            ArrayList<IPhoto> results = new ArrayList<>(mSelectionStore.getSelection());
+//                            ArrayList<IPhoto> results = new ArrayList<>(mSelectionStore.getSelectionCopy());
 //                            mNavigator.navigateToNextPageWithResult(results);
 //                        }
                     }
@@ -125,7 +125,7 @@ public class PhotoPickerToolbarPresenter
     @Override
     public void onResume() {
         // Update number of photo to selector button
-        mToolbarView.setSelectionCount(mSelectionStore.getSelection().size());
+        mToolbarView.setSelectionCount(mSelectionStore.getSelectionCopy().size());
 
         mDisposablesOnResume = new CompositeDisposable();
     }

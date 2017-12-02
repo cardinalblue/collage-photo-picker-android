@@ -40,7 +40,7 @@ public class PhotoPickerStore {
     }
 
     public boolean contains(IPhoto targetPhoto) {
-        return getSelection().contains(targetPhoto);
+        return getSelectionCopy().contains(targetPhoto);
     }
 
     public boolean select(int position,
@@ -58,7 +58,7 @@ public class PhotoPickerStore {
                         // Album Id.
                         albumId,
                         // Full list.
-                        getSelection(),
+                        getSelectionCopy(),
                         // Focus position.
                         position));
 
@@ -88,7 +88,7 @@ public class PhotoPickerStore {
                         // Album Id.
                         albumId,
                         // Full list.
-                        getSelection(),
+                        getSelectionCopy(),
                         // Focus position.
                         position));
                 return true;
@@ -109,12 +109,12 @@ public class PhotoPickerStore {
                 // Album Id.
                 albumId,
                 // Full list.
-                getSelection(),
+                getSelectionCopy(),
                 // Focus position.
                 position));
     }
 
-    public List<IPhoto> getSelection() {
+    public List<IPhoto> getSelectionCopy() {
         final List<IPhoto> clone = new ArrayList<>();
 
         synchronized (mMutex) {

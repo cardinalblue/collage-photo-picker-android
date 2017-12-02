@@ -173,39 +173,23 @@ public class GalleryPhotoPickerFragment
     }
 
     @Override
-    public void onSelectPhoto(int position,
-                              IPhoto IPhoto,
-                              boolean isSelected) {
-        // FIXME: Adapter is responsible for this.
-        // Minus 1 is because the position for the state representing the
-        // position in the photos world.
-        mOnClickPhoto.onNext(position - 1);
+    public void onSelectPhoto(int position) {
+        mOnClickPhoto.onNext(position);
     }
 
     @Override
-    public void onLongPressPhoto(int position,
-                                 IPhoto IPhoto,
-                                 boolean isSelected) {
-        // FIXME: Adapter is responsible for this.
-        // Minus 1 is because the position for the state representing the
-        // position in the photos world.
-        mOnLongClickPhoto.onNext(position - 1);
+    public void onLongPressPhoto(int position) {
+        mOnLongClickPhoto.onNext(position);
     }
 
     @Override
-    public void onClickPreviewIcon(int position,
-                                   IPhoto IPhoto,
-                                   boolean isSelected) {
-        // Minus 1 is because the position for the state representing the
-        // position in the photos world.
-        mOnClickPreviewIcon.onNext(position - 1);
+    public void onClickPreviewIcon(int position) {
+        mOnClickPreviewIcon.onNext(position);
     }
 
     @Override
-    public void onLongPressPreviewIcon(int position,
-                                       IPhoto info,
-                                       boolean isSelected) {
-        onClickPreviewIcon(position, info, isSelected);
+    public void onLongPressPreviewIcon(int position) {
+        onClickPreviewIcon(position);
     }
 
     @Override
@@ -314,12 +298,12 @@ public class GalleryPhotoPickerFragment
 
     @Override
     public void enableLongPress(boolean enabled) {
-        mAdapter.setEnableLongPress(enabled);
+        mAdapter.setIsEnableLongPress(enabled);
     }
 
     @Override
     public void enableCameraOption(boolean enabled) {
-        mAdapter.setEnableCamera(enabled);
+        mAdapter.setIsEnableCamera(enabled);
     }
 
     @Override

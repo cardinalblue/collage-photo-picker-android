@@ -88,9 +88,6 @@ public class PhotoPickerPresenter
     public void bindViewOnCreate(PhotoPickerContract.IPhotoPickerView view) {
         mPickerView = view;
 
-        // Event for experiment variation.
-        mLogger.log("Activation - preview photo size");
-
         // Setting from config.
         mPickerView.enableLongPress(false);
 
@@ -161,12 +158,10 @@ public class PhotoPickerPresenter
                             if (result.isSuccessful) {
                                 final Cursor cursor = result.cursor;
 
-                                // TODO: Recycle the cursor?
                                 // Hold cursor.
                                 mPhotoCursor = cursor;
 
                                 if (cursor.getCount() > 0) {
-                                    // TODO: relationship between cursor and all photo list?
                                     mPickerView.setPhotosCursor(result.cursor,
                                                                 mGalleryLoader);
                                 } else {
@@ -178,11 +173,6 @@ public class PhotoPickerPresenter
 
                                 mPickerView.setPhotosCursor(null, null, null);
                                 mPickerView.showAlertForNotLoadingPhotos();
-                                // TODO: Find a way to re-subscribe the observer to
-                                // TODO: the upstream.
-//                            if (mNavigator != null) {
-//                                mNavigator.navigateToPreviousPageWithoutResult();
-//                            }
                             }
                         } catch (Throwable any) {
                             mLogger.logException(any);
@@ -273,24 +263,11 @@ public class PhotoPickerPresenter
                         mLogger.log("Photo picker - long press photo");
                         mLogger.log("Photo picker - preview", "action", "long press");
 
-//                        if (mNavigator != null) {
-//                            mPhotoCursor.moveToFirst();
-//                            mPhotoCursor.move(position);
-//
-//                            final IPhoto targetPhoto = toPhotoInfo(mPhotoCursor);
-//                            final boolean isSelected = mSelectionStore.getSelection().contains(targetPhoto);
-//                            final String albumId = mAlbumList.get(mAlbumPosition).getAlbumId();
-//
-//                            mNavigator.navigateToPreviewPicker(
-//                                position,
-//                                targetPhoto,
-//                                isSelected,
-//                                albumId);
-//                        }
+                        // Do whatever you want...
                     }
                 }));
 
-        // Navigate to preview page when user tap icon.
+        // Click on preview icon.
         mDisposablesOnCreate.add(
             mPickerView
                 .onClickPreviewIcon()
@@ -305,23 +282,7 @@ public class PhotoPickerPresenter
                         // For click preview icon
                         mLogger.log("Photo picker - preview", "action", "tap icon");
 
-//                        if (mNavigator != null) {
-//                            mPhotoCursor.moveToFirst();
-//                            mPhotoCursor.move(position);
-//
-//                            final IPhoto targetPhoto = toPhotoInfo(mPhotoCursor);
-//                            final boolean isSelected = mSelectionStore.getSelection().contains(targetPhoto);
-//                            final String albumId = mAlbumList.get(mAlbumPosition).getAlbumId();
-//
-//                            mNavigator.navigateToPreviewPicker(
-//                                position,
-//                                targetPhoto,
-//                                isSelected,
-//                                albumId);
-//
-//                            // Update config
-//                            mConfigurator.setPromptInThumbnailPicker(false);
-//                        }
+                        // Do whatever you want...
                     }
                 }));
 
