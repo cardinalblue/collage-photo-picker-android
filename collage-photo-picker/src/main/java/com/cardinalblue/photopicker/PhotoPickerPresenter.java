@@ -104,7 +104,8 @@ public class PhotoPickerPresenter
         mDisposablesOnCreate.add(
             mPermissionsHelper
                 // 1. Ask for permissions.
-                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
+                .request(Manifest.permission.CAMERA,
+                         Manifest.permission.READ_EXTERNAL_STORAGE,
                          Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 // 2. Load albums if the permissions are granted.
                 .flatMap(new Function<Boolean, ObservableSource<List<IAlbum>>>() {
@@ -251,7 +252,7 @@ public class PhotoPickerPresenter
                     @Override
                     public void accept(@NonNull Object o) throws Exception {
                         mLogger.log("Adder menu - Use Camera");
-                        mPickerView.navigateToCameraView();
+                        mPickerView.openCamera();
                     }
                 }));
 
@@ -260,16 +261,16 @@ public class PhotoPickerPresenter
             mPickerView
                 .onTakePhotoFromCamera()
                 .observeOn(mUiScheduler)
-                .subscribe(new Consumer<List<IPhoto>>() {
+                .subscribe(new Consumer<IPhoto>() {
                     @Override
-                    public void accept(List<IPhoto> photos) throws Exception {
+                    public void accept(IPhoto photos) throws Exception {
                         mLogger.log("Add Photos - Image from Camera");
                         mLogger.log("Add Photos", "from", "camera",
                                     "page", "photo picker",
                                     "num_of_image", String.valueOf(1));
-//                        if (mNavigator != null) {
-//                            mNavigator.navigateToNextPageWithResult(photos);
-//                        }
+
+                        // TODO: Actively update photo cursor?
+
                     }
                 }));
 

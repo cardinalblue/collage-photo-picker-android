@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity(),
     // Controllers/presenters.
     private val mMainPresenter: MainPresenter by lazy {
         MainPresenter(mPermissionsHelper,
+                      mSelectionStore,
                       getSharedPreferences(BuildConfig.APPLICATION_ID,
                                            Context.MODE_PRIVATE),
                       AndroidSchedulers.mainThread(),

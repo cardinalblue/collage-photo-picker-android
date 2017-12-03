@@ -18,34 +18,62 @@
 
 package com.cardinalblue.photopicker.view;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
-import com.cardinalblue.photopicker.R;
-import com.cardinalblue.photopicker.data.IAlbum;
-import com.cardinalblue.photopicker.data.IPhoto;
-import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
+import com.cardinalblue.photopicker.BuildConfig;
 import com.cardinalblue.photopicker.IPhotoPickerPresenterProvider;
 import com.cardinalblue.photopicker.IPresenter;
 import com.cardinalblue.photopicker.PhotoPickerContract;
+import com.cardinalblue.photopicker.R;
+import com.cardinalblue.photopicker.data.IAlbum;
+import com.cardinalblue.photopicker.data.IPhoto;
+import com.cardinalblue.photopicker.data.PhotoInfo;
+import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
@@ -59,8 +87,9 @@ public class GalleryPhotoPickerFragment
     private static final String KEY_ALBUM_ID = "extra_album_id";
     private IAlbum mCurrentAlbumInfo;
 
-    private static final int AR_TAKE_PHOTO = 1;
+    private static final int REQUEST_TAKE_PHOTO = 1;
 
+    private static final String KEY_CAMERA_OUTPUT_DIR = "key_camera_output_dir";
     private static final String KEY_CAMERA_OUTPUT_URI = "key_camera_output_uri";
 
     // Views.
@@ -75,7 +104,7 @@ public class GalleryPhotoPickerFragment
     private IPresenter<PhotoPickerContract.IPhotoPickerView> mPickerPresenter;
 
     // Subjects.
-    private final Subject<List<IPhoto>> mOnTakePhotoFromCamera = PublishSubject.create();
+    private final Subject<IPhoto> mOnTakePhotoFromCamera = PublishSubject.create();
     private final Subject<Object> mOnClickCamera = PublishSubject.create();
     private final Subject<String> mOnClickAlbum = PublishSubject.create();
     private final Subject<Integer> mOnClickPhoto = PublishSubject.create();
@@ -198,38 +227,52 @@ public class GalleryPhotoPickerFragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case AR_TAKE_PHOTO:
-//                if (resultCode == Activity.RESULT_OK) {
-//                    try {
-//                        Uri uri = findCameraPhotoPath(data);
-//                        String url = Uri.decode(
-//                            uri.toString()); // FIXME this part is weird, we need to fix it in next version
-//
-//                        // Get the size.
-//                        Rect size = ImageUtils.getOriginalSize(getActivity(), uri);
-//                        int width = 0;
-//                        int height = 0;
-//                        if (size != null) {
-//                            width = size.width();
-//                            height = size.height();
-//                        }
-//                        IPhoto photo = new IPhoto(url, url, width, height);
-//                        // Note: Be sure to decode URI.
-//                        ArrayList<IPhoto> photos = new ArrayList<>();
-//                        photos.add(photo);
-//
-//                        mOnTakePhotoFromCamera.onNext(photos);
-//
-//                        mCameraOutputUri = null;
-//                    } catch (PictureFiles.Exception e) {
-//                        AppHelper.<ILogEvent>get(ILogEvent.class).sendException(e);
-//
-//                        Toast.makeText(getActivity(),
-//                                       "Sorry, failed to insert the photo from Camera.",
-//                                       Toast.LENGTH_SHORT)
-//                             .show();
-//                    }
-//                }
+            case REQUEST_TAKE_PHOTO:
+                if (resultCode == Activity.RESULT_OK) {
+                    try {
+                        findCameraPhotoPath(data)
+                            .observeOn(Schedulers.io())
+                            .map(new Function<Uri, IPhoto>() {
+                                @Override
+                                public IPhoto apply(Uri uri) throws Exception {
+                                    // Decode the URI to get real file path.
+                                    final String url = Uri.decode(uri.toString());
+
+                                    // Get the size.
+                                    final Rect size = getOriginalSize(getActivity(), uri);
+                                    int width = 0;
+                                    int height = 0;
+                                    if (size != null) {
+                                        width = size.width();
+                                        height = size.height();
+                                    }
+
+                                    return new PhotoInfo(url, url, width, height);
+                                }
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<IPhoto>() {
+                                @Override
+                                public void accept(IPhoto photo) throws Exception {
+                                    // If the photo is saved, add to system media scanner.
+                                    MediaScannerConnection
+                                        .scanFile(getActivity(),
+                                                  new String[]{mCameraOutputUri.getPath()}, null, null);
+
+                                    // Clear uri.
+                                    mCameraOutputUri = null;
+
+                                    // Dispatch result.
+                                    mOnTakePhotoFromCamera.onNext(photo);
+                                }
+                            });
+                    } catch (Throwable error) {
+                        Toast.makeText(getActivity(),
+                                       "Sorry, failed to insert the photo from Camera.",
+                                       Toast.LENGTH_LONG)
+                             .show();
+                    }
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -255,7 +298,7 @@ public class GalleryPhotoPickerFragment
     }
 
     @Override
-    public Observable<List<IPhoto>> onTakePhotoFromCamera() {
+    public Observable<IPhoto> onTakePhotoFromCamera() {
         return mOnTakePhotoFromCamera;
     }
 
@@ -391,67 +434,161 @@ public class GalleryPhotoPickerFragment
     }
 
     @Override
-    public void navigateToCameraView() {
-//        try {
-//            File imageFile = PictureFiles.PublicFile("Photo", "jpg");
-//            mCameraOutputUri = Uri.fromFile(imageFile);
-//
-//            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//            Uri outputUri = FileProvider.getUriForFile(getActivity(),
-//                                                       PicCollageUtils.SHARED_FILE_AUTHORITY,
-//                                                       imageFile);
-//            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-//
-//            // Android 4.x device will got SecurityException when accessing the file that provide by FileProvider
-//            // ref : https://medium.com/@a1cooke/using-v4-support-library-fileprovider-and-camera-intent-a45f76879d61#.wnrl5hj3c
-//            //
-//            List<ResolveInfo> resolvedIntentActivities = getContext().getPackageManager()
-//                                                                     .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-//            for (ResolveInfo resolvedIntentInfo : resolvedIntentActivities) {
-//                String packageName = resolvedIntentInfo.activityInfo.packageName;
-//                getContext().grantUriPermission(packageName, outputUri,
-//                                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            }
-//            startActivityForResult(intent, AR_TAKE_PHOTO);
-//        } catch (Throwable exc) {
-//            Toast.makeText(getActivity(),
-//                           R.string.image_source_failed_to_start,
-//                           Toast.LENGTH_SHORT)
-//                 .show();
-//        }
+    public void openCamera() {
+        try {
+            final File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+            final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH_mm_ss", Locale.ENGLISH);
+            final File imageFile = new File(dir, "Photo " + formatter.format(new Date()) + "." + "jpg");
+
+            // Hold the saved path.
+            mCameraOutputUri = Uri.fromFile(imageFile);
+
+            final String authority = BuildConfig.APPLICATION_ID + ".file_provider";
+            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri outputUri = FileProvider.getUriForFile(getActivity(),
+                                                       authority,
+                                                       imageFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+
+            // Android 4.x device will got SecurityException when accessing the file that provide by FileProvider
+            // ref : https://medium.com/@a1cooke/using-v4-support-library-fileprovider-and-camera-intent-a45f76879d61#.wnrl5hj3c
+            List<ResolveInfo> resolvedIntentActivities = getContext()
+                .getPackageManager()
+                .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolvedIntentInfo : resolvedIntentActivities) {
+                String packageName = resolvedIntentInfo.activityInfo.packageName;
+                getContext().grantUriPermission(packageName, outputUri,
+                                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+
+            startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+        } catch (Throwable error) {
+            Toast.makeText(getContext(),
+                           error.getMessage(),
+                           Toast.LENGTH_LONG)
+                 .show();
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Protected / Private Methods ////////////////////////////////////////////
 
-//    private Uri findCameraPhotoPath(Intent data) throws PictureFiles.Exception {
-//        if (mCameraOutputUri != null) {
-//            MediaScannerConnection
-//                .scanFile(getActivity(), new String[]{mCameraOutputUri.getPath()}, null, null);
-//            return mCameraOutputUri;
-//        } else if (data != null) {
-//            Uri fileUri = data.getData();
-//            if (fileUri != null) {
-//                return fileUri;
-//            } else if (data.hasExtra("data")) {
-//                // Some devices or some camera app does not setData() based on
-//                // our given file uri. Instead, they put the bitmap data directly
-//                // within the intent. Thus, we have this case to fix this.
-//                //
-//                // One known device has this situation is *hTC Flyer*.
-//                //
-//                // Some intents, like Cameras, return the Bitmap directly via the
-//                // 'data' extra. This needs to be done after the URI check as
-//                // some galleries also seem to return a thumbnail this way, and
-//                // we don't want the thumbnail.
-//                Bitmap bm = (Bitmap) data.getExtras().get("data");
-//                if (bm == null) {
-//                    throw new PictureFiles.Exception(
-//                        "can't get camera data from data.getExtras().get('data')");
-//                }
-//                return Uri.fromFile(PictureFiles.savePrivatePicture(bm, "png"));
-//            }
-//        }
-//        throw new PictureFiles.Exception("can not found any camera photo information from intent");
-//    }
+    private Observable<Uri> findCameraPhotoPath(final Intent data) {
+        if (mCameraOutputUri != null) {
+            return Observable.just(mCameraOutputUri);
+        } else if (data != null) {
+            final Uri fileUri = data.getData();
+            if (fileUri != null) {
+                return Observable.just(fileUri);
+            } else if (data.hasExtra("data")) {
+                return Observable
+                    .fromCallable(new Callable<Uri>() {
+                        @Override
+                        public Uri call() throws Exception {
+                            // Some devices or some camera app does not setData() based on
+                            // our given file uri. Instead, they put the bitmap data directly
+                            // within the intent. Thus, we have this case to fix this.
+                            //
+                            // One known device has this situation is *hTC Flyer*.
+                            //
+                            // Some intents, like Cameras, return the Bitmap directly via the
+                            // 'data' extra. This needs to be done after the URI check as
+                            // some galleries also seem to return a thumbnail this way, and
+                            // we don't want the thumbnail.
+                            final Bitmap bmp = data.getParcelableExtra("data");
+                            if (bmp == null) {
+                                throw new RuntimeException(
+                                    "Can't get camera data from data.getParcelableExtra('data')");
+                            }
+
+                            return Uri.fromFile(savePicture(bmp));
+                        }
+                    })
+                    .subscribeOn(Schedulers.io());
+            }
+        }
+
+        throw new RuntimeException("Can't find any camera photo information from the intent");
+    }
+
+    private File savePicture(Bitmap bmp) throws IOException {
+        // FIXME: Probably won't find mCameraOutputUri.
+        final String savedPath = Uri.decode(mCameraOutputUri.toString());
+        final File savedFile = new File(savedPath);
+
+        final Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
+        final FileOutputStream fos = new FileOutputStream(savedPath);
+        bmp.compress(format, 90, fos);
+        fos.close();
+
+        return savedFile;
+    }
+
+    private Rect getOriginalSize(Context context, Uri uri) {
+        try {
+            // Option to load size only.
+            BitmapFactory.Options option = new BitmapFactory.Options();
+            option.inJustDecodeBounds = true;
+            // Get the width and height.
+            switch (uri.getScheme().toLowerCase()) {
+                case "assets": {
+                    final String path = uri.getAuthority() + uri.getPath();
+                    final InputStream inputStream = context.getAssets().open(path);
+                    BitmapFactory.decodeStream(inputStream, null, option);
+                    inputStream.close();
+                    break;
+                }
+                case "content":
+                case "file":
+                default: {
+                    BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri),
+                                               null, option);
+                    break;
+                }
+            }
+
+            int exifOrientation = getExifOrientation(uri.getPath());
+            if (exifOrientation == 90 || exifOrientation == 270) {
+                return new Rect(0, 0, option.outHeight, option.outWidth);
+            } else {
+                return new Rect(0, 0, option.outWidth, option.outHeight);
+            }
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Get orientation of the image from Exif information.
+     * Possible values: 0, 90, 180, 270.
+     * Returns 0 if can't get the information.
+     */
+    private int getExifOrientation(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            return 0;
+        }
+
+        try {
+            ExifInterface exif = new ExifInterface(filePath);
+            int exifOrientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+
+            switch (exifOrientation) {
+                case ExifInterface.ORIENTATION_NORMAL:
+                    return 0;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return 90;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return 180;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return 270;
+                default:
+                    return 0;
+            }
+        } catch (IOException exc) {
+            return 0;
+        }
+    }
 }

@@ -44,7 +44,7 @@ class SplashScreenActivity : AppCompatActivity() {
         // Do nothing but wait few seconds and launch the start page.
         Observable
             .just(true)
-            .delay(150, TimeUnit.MILLISECONDS)
+            .delay(75, TimeUnit.MILLISECONDS)
             .subscribe {
                 startActivity(Intent(this@SplashScreenActivity,
                                      MainActivity::class.java))

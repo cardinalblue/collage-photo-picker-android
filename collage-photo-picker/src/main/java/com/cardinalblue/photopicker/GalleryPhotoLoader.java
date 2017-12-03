@@ -23,6 +23,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -32,6 +33,7 @@ import com.cardinalblue.photopicker.data.IAlbum;
 import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.data.PhotoInfo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;

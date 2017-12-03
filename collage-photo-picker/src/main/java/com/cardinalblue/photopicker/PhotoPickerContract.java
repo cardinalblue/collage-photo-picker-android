@@ -25,6 +25,7 @@ import com.cardinalblue.photopicker.data.IAlbum;
 import com.cardinalblue.photopicker.data.IPhoto;
 import com.cardinalblue.photopicker.model.PhotoPickerViewModel;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -59,7 +60,7 @@ public final class PhotoPickerContract {
 
         Observable<Object> onClickCamera();
 
-        Observable<List<IPhoto>> onTakePhotoFromCamera();
+        Observable<IPhoto> onTakePhotoFromCamera();
 
         Observable<Integer> onLongPressThumbnail();
 
@@ -89,8 +90,7 @@ public final class PhotoPickerContract {
 
         void scrollToPosition(int position);
 
-        // TODO: Navigator's responsibility.
-        void navigateToCameraView();
+        void openCamera();
     }
 
     public interface IPhotosLoader {
@@ -103,6 +103,9 @@ public final class PhotoPickerContract {
 
         IPhoto toPhoto(Cursor cursor, boolean isGetSize);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Protected / Private Methods ////////////////////////////////////////////
 
     private PhotoPickerContract() {
         // Private constructor make this class like a namespace.

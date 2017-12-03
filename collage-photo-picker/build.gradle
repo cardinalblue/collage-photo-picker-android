@@ -28,6 +28,7 @@ dependencies {
 
     // Google Support Library.
     implementation rootProject.ext.dep.supportAppcompatV7
+    implementation rootProject.ext.dep.supportExif
     implementation rootProject.ext.dep.supportVectorDrawable
     implementation rootProject.ext.dep.supportRecyclerViewV7
     implementation rootProject.ext.dep.supportConstraintLayout
