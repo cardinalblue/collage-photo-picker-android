@@ -219,6 +219,38 @@ public class PhotoPickerPresenter
                     }
                 }));
 
+        // When User open camera.
+        mDisposablesOnCreate.add(
+            mPickerView
+                .onClickCamera()
+                .observeOn(mUiScheduler)
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(@NonNull Object o) throws Exception {
+                        mLogger.log("Adder menu - Use Camera");
+                        mPickerView.openCamera();
+                    }
+                }));
+
+        // When camera gives the photos.
+        mDisposablesOnCreate.add(
+            mPickerView
+                .onTakePhotoFromCamera()
+                .observeOn(mUiScheduler)
+                .subscribe(new Consumer<IPhoto>() {
+                    @Override
+                    public void accept(IPhoto photo) throws Exception {
+                        mLogger.log("Add Photos - Image from Camera");
+                        mLogger.log("Add Photos", "from", "camera",
+                                    "page", "photo picker",
+                                    "num_of_image", String.valueOf(1));
+
+                        // Actively update photos.
+                        mRefreshPhotos.onNext(mAlbumList.get(mAlbumPosition)
+                                                        .getAlbumId());
+                    }
+                }));
+
         // Click on thumbnail.
         mDisposablesOnCreate.add(
             mPickerView
@@ -252,37 +284,6 @@ public class PhotoPickerPresenter
                                 mPickerView.showAlertExceedMaxPhotoNumber();
                             }
                         }
-                    }
-                }));
-
-        // When User open camera.
-        mDisposablesOnCreate.add(
-            mPickerView
-                .onClickCamera()
-                .observeOn(mUiScheduler)
-                .subscribe(new Consumer<Object>() {
-                    @Override
-                    public void accept(@NonNull Object o) throws Exception {
-                        mLogger.log("Adder menu - Use Camera");
-                        mPickerView.openCamera();
-                    }
-                }));
-
-        // When camera gives the photos.
-        mDisposablesOnCreate.add(
-            mPickerView
-                .onTakePhotoFromCamera()
-                .observeOn(mUiScheduler)
-                .subscribe(new Consumer<IPhoto>() {
-                    @Override
-                    public void accept(IPhoto photos) throws Exception {
-                        mLogger.log("Add Photos - Image from Camera");
-                        mLogger.log("Add Photos", "from", "camera",
-                                    "page", "photo picker",
-                                    "num_of_image", String.valueOf(1));
-
-                        // TODO: Actively update photo cursor?
-
                     }
                 }));
 
