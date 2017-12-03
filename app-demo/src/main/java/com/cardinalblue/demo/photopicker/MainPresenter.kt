@@ -44,15 +44,15 @@ class MainPresenter(permissionsHelper: RxPermissions,
             mMainView?.setSwitchSaveChecked(true)
 
             // TODO: Read the selection from a file.
-            Observable
-                .fromCallable {
-
-                }
-                .subscribeOn(mWorkScheduler)
-                .observeOn(mUiScheduler)
-                .subscribe { selections ->
-
-                }
+//            Observable
+//                .fromCallable {
+//                    // TODO: Complete it.
+//                }
+//                .subscribeOn(mWorkScheduler)
+//                .observeOn(mUiScheduler)
+//                .subscribe { selections ->
+//                    // TODO: Complete it.
+//                }
         }
 
         // Click on switch save.

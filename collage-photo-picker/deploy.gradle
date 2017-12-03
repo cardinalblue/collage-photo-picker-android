@@ -1,0 +1,28 @@
+apply plugin: 'com.novoda.bintray-release'
+
+ext {
+    library_artifactId = 'collage-photo-picker'
+    library_groupId = 'com.cardinalblue.photopicker'
+    library_version = '1.0.0'
+    library_desc = 'A simple photo picker we are using for PicCollage app.'
+
+    site_url = 'https://github.com/cardinalblue/collage-photo-picker-android'
+    vcs_url = 'https://github.com/cardinalblue/collage-photo-picker-android.git'
+}
+
+publish {
+    bintrayUser = System.getenv('BINTRAY_CBLUE_USER')
+    bintrayKey = System.getenv('BINTRAY_CBLUE_API_KEY')
+
+    repoName = 'android'
+    uploadName = 'collage-photo-picker'
+
+    groupId = library_groupId
+    artifactId = library_artifactId
+    publishVersion = library_version
+
+    userOrg = System.getenv('BINTRAY_CBLUE_USER')
+    desc = library_desc
+    website = site_url
+    dryRun = false
+}

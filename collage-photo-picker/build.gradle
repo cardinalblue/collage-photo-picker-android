@@ -13,6 +13,13 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    lintOptions {
+        abortOnError false
+        disable "MissingTranslation"
     }
 
     buildTypes {
@@ -53,3 +60,6 @@ dependencies {
     androidTestImplementation rootProject.ext.dep.testRunner
     androidTestImplementation rootProject.ext.dep.testEspressoCore
 }
+
+// Deployment script.
+apply from: 'deploy.gradle'

@@ -25,9 +25,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
+ * <p>
  * The grid item decoration for vertical orientation.
- * <br/>
+ * </p>
+ * <p>
  * Note: The given {@link RecyclerView}'s padding would be changed!
+ * </p>
  */
 public class GridSpacingDecoration extends RecyclerView.ItemDecoration {
 

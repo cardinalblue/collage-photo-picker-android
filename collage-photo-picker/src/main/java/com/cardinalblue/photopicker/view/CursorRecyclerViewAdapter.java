@@ -105,6 +105,10 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
     /**
      * Change the underlying cursor to a new cursor. If there is an existing
      * cursor it will be closed.
+     *
+     * @param cursor The cursor pointing to the photo (either database or memory).
+     *
+     * @throws Exception when cursor is already closed.
      */
     @SuppressWarnings("unused")
     public void setData(Cursor cursor) throws Exception {

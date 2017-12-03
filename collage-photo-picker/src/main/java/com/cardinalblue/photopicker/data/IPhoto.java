@@ -16,6 +16,7 @@ public interface IPhoto extends Parcelable {
 
     /**
      * The source URL.
+     * @return The source URL.
      */
     String getSourceUrl();
 
