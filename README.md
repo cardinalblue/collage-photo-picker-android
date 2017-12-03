@@ -27,8 +27,15 @@ Wiki
 
 ### General
 
+The photo-picker is a componenet that is composed by Model, View, and Presenter sub-components.
+
 constructing...
 
 ### Usage
 
-constructing...
+```
+supportFragmentManager
+    .beginTransaction()
+    .replace(R.id.picker, GalleryPhotoPickerFragment() as Fragment)
+    .commit()
+```
