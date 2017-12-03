@@ -84,20 +84,18 @@ public class GalleryPhotoPickerFragment
 
     private static final Object IGNORED = new Object();
 
-    private static final String KEY_ALBUM_ID = "extra_album_id";
-    private IAlbum mCurrentAlbumInfo;
-
-    private static final int REQUEST_TAKE_PHOTO = 1;
-
-    private static final String KEY_CAMERA_OUTPUT_DIR = "key_camera_output_dir";
-    private static final String KEY_CAMERA_OUTPUT_URI = "key_camera_output_uri";
-
     // Views.
     protected Spinner mAlbumSpinner;
     protected RecyclerView mGalleryView;
     private PhotoAdapter mAdapter;
 
+    // Albums.
+    private static final String KEY_ALBUM_ID = "extra_album_id";
+    private IAlbum mCurrentAlbumInfo;
+
     // Camera.
+    private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final String KEY_CAMERA_OUTPUT_URI = "key_camera_output_uri";
     private Uri mCameraOutputUri = null;
 
     // Presenter.
