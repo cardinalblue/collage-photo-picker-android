@@ -41,6 +41,7 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
@@ -62,12 +63,15 @@ public class PhotoPickerPresenter
     // Albums.
     private int mAlbumPosition = 0;
     private ArrayList<IAlbum> mAlbumList = new ArrayList<>();
+    // TODO: Make sure the subject is thread-safe.
+    private final Subject<String> mRefreshPhotos = BehaviorSubject.create();
 
     // Photos.
     private Cursor mPhotoCursor = null;
     private int mFocusPosition = PhotoPickerViewModel.IGNORED_POSITION;
 
     // Error.
+    // TODO: Make sure the subject is thread-safe.
     private final Subject<Throwable> mOnError = PublishSubject.create();
 
     // Disposable
@@ -97,10 +101,9 @@ public class PhotoPickerPresenter
 
         // Setting from config.
         mPickerView.enableLongPress(false);
-
         mPickerView.enableCameraOption(true);
 
-        // Load all albums
+        // Ask for permissions and load albums.
         mDisposablesOnCreate.add(
             mPermissionsHelper
                 // 1. Ask for permissions.
@@ -137,26 +140,33 @@ public class PhotoPickerPresenter
                     }
                 }));
 
-        // Load photo list from album after user select different album
+        // Click on album.
         mDisposablesOnCreate.add(
             mPickerView
                 .onClickAlbum()
-                .observeOn(mWorkScheduler)
-                .switchMap(new Function<String, ObservableSource<CursorViewModel>>() {
+                .observeOn(mUiScheduler)
+                .subscribe(new Consumer<String>() {
                     @Override
-                    public ObservableSource<CursorViewModel> apply(String id) throws Exception {
-                        // Update album position.
+                    public void accept(String id) throws Exception {
                         for (int i = 0; i < mAlbumList.size(); ++i) {
                             final IAlbum album = mAlbumList.get(i);
                             if (album.getAlbumId().equals(id)) {
+                                // Hold album position.
                                 mAlbumPosition = i;
                                 break;
                             }
                         }
 
-                        // Reset the scroll.
-                        mPickerView.scrollToPosition(0);
+                        mRefreshPhotos.onNext(id);
+                    }
+                }));
 
+        // Load/refresh photos.
+        mDisposablesOnCreate.add(
+            mRefreshPhotos
+                .switchMap(new Function<String, ObservableSource<CursorViewModel>>() {
+                    @Override
+                    public ObservableSource<CursorViewModel> apply(String id) throws Exception {
                         return mGalleryLoader
                             .loadPhotosByAlbum(id)
                             .subscribeOn(mWorkScheduler)
@@ -191,6 +201,8 @@ public class PhotoPickerPresenter
                                                                 mGalleryLoader,
                                                                 // Immutable data.
                                                                 getUrlSelectionSet());
+                                    // Reset the scroll.
+                                    mPickerView.scrollToPosition(0);
                                 } else {
                                     mPickerView.showAlertForNotLoadingPhotos();
                                 }

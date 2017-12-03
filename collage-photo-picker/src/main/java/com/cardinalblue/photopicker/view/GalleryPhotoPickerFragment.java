@@ -251,17 +251,27 @@ public class GalleryPhotoPickerFragment
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Consumer<IPhoto>() {
                                 @Override
-                                public void accept(IPhoto photo) throws Exception {
+                                public void accept(final IPhoto photo) throws Exception {
                                     // If the photo is saved, add to system media scanner.
-                                    MediaScannerConnection
-                                        .scanFile(getActivity(),
-                                                  new String[]{mCameraOutputUri.getPath()}, null, null);
+                                    MediaScannerConnection.scanFile(
+                                        getActivity(),
+                                        new String[]{mCameraOutputUri.getPath()},
+                                        null,
+                                        new MediaScannerConnection.MediaScannerConnectionClient() {
+                                            @Override
+                                            public void onMediaScannerConnected() {
+
+                                            }
+
+                                            @Override
+                                            public void onScanCompleted(String path, Uri uri) {
+                                                // Dispatch result.
+                                                mOnTakePhotoFromCamera.onNext(photo);
+                                            }
+                                        });
 
                                     // Clear uri.
                                     mCameraOutputUri = null;
-
-                                    // Dispatch result.
-                                    mOnTakePhotoFromCamera.onNext(photo);
                                 }
                             });
                     } catch (Throwable error) {
