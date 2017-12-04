@@ -63,16 +63,14 @@ public class PhotoPickerPresenter
     // Albums.
     private int mAlbumPosition = 0;
     private ArrayList<IAlbum> mAlbumList = new ArrayList<>();
-    // TODO: Make sure the subject is thread-safe.
-    private final Subject<String> mRefreshPhotos = BehaviorSubject.create();
+    private final Subject<String> mRefreshPhotos = BehaviorSubject.<String>create().toSerialized();
 
     // Photos.
     private Cursor mPhotoCursor = null;
     private int mFocusPosition = PhotoPickerViewModel.IGNORED_POSITION;
 
     // Error.
-    // TODO: Make sure the subject is thread-safe.
-    private final Subject<Throwable> mOnError = PublishSubject.create();
+    private final Subject<Throwable> mOnError = PublishSubject.<Throwable>create().toSerialized();
 
     // Disposable
     private final CompositeDisposable mDisposablesOnCreate = new CompositeDisposable();
